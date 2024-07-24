@@ -55,6 +55,7 @@ contract MerkleAirdropTest is Test {
         airdrop.claim(user, AMOUNT_TO_CLAIM, PROOF);
 
         uint256 userEndingBalance = token.balanceOf(user);
-        console.log(userStartingBalance, userEndingBalance);
+        console.log(userEndingBalance);
+        assertEq(userEndingBalance - userStartingBalance, AMOUNT_TO_CLAIM);
     }
 }
