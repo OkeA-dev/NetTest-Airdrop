@@ -26,8 +26,10 @@ pragma solidity ^0.8.24;
 import {Test, console} from "forge-std/Test.sol";
 import {MerkleAirdrop} from "../src/MerkleAirdrop.sol";
 import {NetTest__Token} from "../src/NetTestToken.sol";
+import {ZkSyncChainChecker} from "lib/foundry-devops/src/ZkSyncChainChecker.sol";
+import {DeployMerkleAirdrop} from "../script/DeployMerkleAirdrop.s.sol";
 
-contract MerkleAirdropTest is Test {
+contract MerkleAirdropTest is Test, ZkSyncChainChecker {
     uint256 private constant AMOUNT_TO_CLAIM = 25 * 1e18;
     uint256 private constant AMOUNT_TO_SEND = AMOUNT_TO_CLAIM * 4;
     bytes32 private constant ROOT = 0xaa5d581231e596618465a56aa0f5870ba6e20785fe436d5bfb82b08662ccc7c4;
@@ -41,14 +43,22 @@ contract MerkleAirdropTest is Test {
     bytes32[] public PROOF = [proofTwo, proofOne];
 
     function setUp() public {
-        token = new NetTest__Token();
-        airdrop = new MerkleAirdrop(ROOT, token);
-        token.mint(token.owner(), AMOUNT_TO_SEND);
-        token.transfer(address(airdrop), AMOUNT_TO_SEND);
-        (user, privateKey) = makeAddrAndKey("user");
+        if (!isZkSyncChain()) {
+            DeployMerkleAirdrop deployer = new DeployMerkleAirdrop();
+            (airdrop, token) = deployer.run();
+        } else {
+            token = new NetTest__Token();
+            airdrop = new MerkleAirdrop(ROOT, token);
+            token.mint(token.owner(), AMOUNT_TO_SEND);
+            token.transfer(address(airdrop), AMOUNT_TO_SEND);
+        }
 
+        (user, privateKey) = makeAddrAndKey("user");
     }
 
+    /////////////////////////////
+    ///   CLAIMING TEST    /////
+    ///////////////////////////
     function testUsersCanClaim() public {
         uint256 userStartingBalance = token.balanceOf(user);
         vm.prank(user);
