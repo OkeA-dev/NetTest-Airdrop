@@ -10,6 +10,9 @@ contract DeployMerkleAirdrop is Script {
      bytes32 private s_merkleRoot = 0xaa5d581231e596618465a56aa0f5870ba6e20785fe436d5bfb82b08662ccc7c4;
      uint256 private s_amountToTransfer = 4 * 25 * 1e18;
 
+    /////////////////////////////
+    // Deploy Merkle airdrop  //
+    ///////////////////////////
     function deployMerkleAirdrop() public returns(MerkleAirdrop, NetTest__Token) {
          vm.startBroadcast();
         NetTest__Token token = new NetTest__Token();
